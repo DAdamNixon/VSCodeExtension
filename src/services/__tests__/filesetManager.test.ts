@@ -32,16 +32,27 @@ jest.mock('../logger', () => {
 
 import { FilesetManager } from '../filesetManager';
 import { PendingChange } from '../filesetManager';
+import * as vscode from 'vscode';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 declare const expect: any;
 
 describe('FilesetManager', () => {
     let filesetManager: FilesetManager;
+    let mockDispose: jest.Mock;
 
     beforeEach(() => {
         // Reset mocks
         jest.clearAllMocks();
+        
+        // Setup mock for EventEmitter.dispose
+        mockDispose = jest.fn();
+        (vscode.EventEmitter as jest.Mock).mockImplementation(() => ({
+            fire: jest.fn(),
+            event: jest.fn().mockReturnValue(jest.fn()),
+            dispose: mockDispose
+        }));
+        
         // Reset singleton
         (FilesetManager as any).instance = undefined;
         
@@ -108,6 +119,56 @@ describe('FilesetManager', () => {
         filesetManager.setPendingChanges(changes);
         filesetManager.clear();
         
+        expect(filesetManager.getAllFiles()).toHaveLength(0);
+    });
+    
+    test('should check if a file is included', () => {
+        // Note: setPendingChanges always sets isIncluded to true, 
+        // so we need to use setFileInclusion to test both cases
+        filesetManager.setPendingChanges([
+            { path: 'file1.txt', status: 'edit', isIncluded: true },
+            { path: 'file2.txt', status: 'add', isIncluded: true }
+        ]);
+        
+        // Set file2 to be excluded
+        filesetManager.setFileInclusion('file2.txt', false);
+        
+        // Test an included file
+        expect(filesetManager.isFileIncluded('file1.txt')).toBe(true);
+        
+        // Test an excluded file
+        expect(filesetManager.isFileIncluded('file2.txt')).toBe(false);
+        
+        // Test a non-existent file
+        expect(filesetManager.isFileIncluded('non-existent.txt')).toBe(false);
+    });
+    
+    test('should dispose resources properly', () => {
+        // Setup changes
+        const changes: PendingChange[] = [
+            { path: 'file1.txt', status: 'edit', isIncluded: true }
+        ];
+        filesetManager.setPendingChanges(changes);
+        
+        // Call dispose
+        filesetManager.dispose();
+        
+        // Check that EventEmitter.dispose was called
+        expect(mockDispose).toHaveBeenCalled();
+        
+        // Verify pendingChanges was cleared
+        expect(filesetManager.getAllFiles()).toHaveLength(0);
+    });
+    
+    test('should do nothing when toggling a non-existent file', () => {
+        filesetManager.toggleFileInclusion('non-existent.txt');
+        // Just verifying it doesn't throw an error
+        expect(filesetManager.getAllFiles()).toHaveLength(0);
+    });
+    
+    test('should do nothing when setting inclusion on a non-existent file', () => {
+        filesetManager.setFileInclusion('non-existent.txt', true);
+        // Just verifying it doesn't throw an error
         expect(filesetManager.getAllFiles()).toHaveLength(0);
     });
 }); 
