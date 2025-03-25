@@ -1,0 +1,246 @@
+{
+  "name": "vscode-tfvc",
+  "displayName": "TFVC Integration",
+  "description": "Team Foundation Version Control integration for Visual Studio Code",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "views": {
+      "scm": [
+        {
+          "id": "tfvcPendingChanges",
+          "name": "Pending Changes",
+          "when": "scmProvider == 'tfvc'"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "vscode-tfvc.initializeWorkspace",
+        "title": "TFVC: Initialize Workspace"
+      },
+      {
+        "command": "vscode-tfvc.checkin",
+        "title": "TFVC: Check In"
+      },
+      {
+        "command": "vscode-tfvc.checkout",
+        "title": "TFVC: Check Out"
+      },
+      {
+        "command": "vscode-tfvc.getLatest",
+        "title": "TFVC: Get Latest"
+      },
+      {
+        "command": "vscode-tfvc.merge",
+        "title": "TFVC: Merge Changes"
+      },
+      {
+        "command": "vscode-tfvc.createShelveset",
+        "title": "TFVC: Create Shelveset"
+      },
+      {
+        "command": "vscode-tfvc.applyShelveset",
+        "title": "TFVC: Apply Shelveset"
+      },
+      {
+        "command": "vscode-tfvc.showHistory",
+        "title": "TFVC: Show History"
+      },
+      {
+        "command": "vscode-tfvc.showBranches",
+        "title": "TFVC: Show Branches"
+      },
+      {
+        "command": "vscode-tfvc.showLogs",
+        "title": "TFVC: Show Logs"
+      },
+      {
+        "command": "vscode-tfvc.refreshPendingChanges",
+        "title": "TFVC: Refresh Pending Changes",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "vscode-tfvc.includeFile",
+        "title": "TFVC: Include File in Pending Changes",
+        "icon": "$(check)"
+      },
+      {
+        "command": "vscode-tfvc.excludeFile",
+        "title": "TFVC: Exclude File from Pending Changes",
+        "icon": "$(close)"
+      },
+      {
+        "command": "vscode-tfvc.includeAllFiles",
+        "title": "TFVC: Include All Files",
+        "icon": "$(check-all)"
+      },
+      {
+        "command": "vscode-tfvc.excludeAllFiles",
+        "title": "TFVC: Exclude All Files",
+        "icon": "$(close-all)"
+      },
+      {
+        "command": "vscode-tfvc.showDiagnostics",
+        "title": "TFVC: Show Diagnostics Report",
+        "category": "TFVC"
+      },
+      {
+        "command": "vscode-tfvc.showDiff",
+        "title": "TFVC: Show Changes",
+        "icon": "$(diff)"
+      }
+    ],
+    "menus": {
+      "scm/title": [
+        {
+          "command": "vscode-tfvc.initializeWorkspace",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-tfvc.getLatest",
+          "group": "navigation"
+        },
+        {
+          "command": "vscode-tfvc.refreshPendingChanges",
+          "when": "scmProvider == 'tfvc'",
+          "group": "navigation"
+        }
+      ],
+      "scm/resourceGroup/context": [
+        {
+          "command": "vscode-tfvc.includeAllFiles",
+          "group": "inline@1"
+        },
+        {
+          "command": "vscode-tfvc.excludeAllFiles",
+          "group": "inline@2"
+        }
+      ],
+      "scm/resourceState/context": [
+        {
+          "command": "vscode-tfvc.includeFile",
+          "when": "scmProvider == 'tfvc' && scmResourceGroup != 'included'",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-tfvc.excludeFile",
+          "when": "scmProvider == 'tfvc' && scmResourceGroup == 'included'",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-tfvc.checkout",
+          "when": "scmProvider == 'tfvc'",
+          "group": "1_modification"
+        },
+        {
+          "command": "vscode-tfvc.showHistory",
+          "when": "scmProvider == 'tfvc'",
+          "group": "2_information"
+        },
+        {
+          "command": "vscode-tfvc.showDiff",
+          "when": "scmProvider == 'tfvc'",
+          "group": "inline@1"
+        },
+        {
+          "command": "vscode-tfvc.showDiff",
+          "when": "scmProvider == 'tfvc'",
+          "group": "1_modification@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "vscode-tfvc.showDiagnostics",
+          "when": "workbenchState == 'workspace'"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "TFVC",
+      "properties": {
+        "tfvc.tfPath": {
+          "type": "string",
+          "default": "tf",
+          "description": "Path to the TFVC command line tool (tf.exe)"
+        },
+        "tfvc.showStatusBarItem": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show TFVC status in the status bar"
+        },
+        "tfvc.showFileStatus": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show file status decorations in the explorer"
+        },
+        "tfvc.logLevel": {
+          "type": "string",
+          "enum": [
+            "debug",
+            "info",
+            "warning",
+            "error"
+          ],
+          "default": "info",
+          "description": "Set the logging level for TFVC operations"
+        },
+        "tfvc.logToOutputChannel": {
+          "type": "boolean",
+          "default": true,
+          "description": "Log TFVC operations to the output channel"
+        },
+        "tfvc.autoRefreshPendingChanges": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically refresh pending changes when files are modified"
+        },
+        "tfvc.autoCheckout": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically check out files when they are modified"
+        },
+        "tfvc.autoCheckoutOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Only check out files when they are saved (requires tfvc.autoCheckout to be enabled)"
+        },
+        "tfvc.useVisualStudioCredentials": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use Visual Studio credentials for authentication (recommended for Windows)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.11",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
+  }
+}
